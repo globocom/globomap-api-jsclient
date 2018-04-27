@@ -16,7 +16,7 @@ limitations under the License.
 
 import axios from 'axios';
 
-export default class GmapClient {
+class GmapClient {
 
   constructor(options={}) {
     let {
@@ -153,3 +153,5 @@ export default class GmapClient {
   }
 
 }
+
+module.exports = GmapClient;
