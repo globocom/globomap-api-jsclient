@@ -35,24 +35,28 @@ export default class GmapClient {
   }
 
   auth() {
-    if (!this.token) {
-      return axios.post(this.authUrl, {
-        username: this.username,
-        password: this.password
-      })
-      .then((response) => {
-        this.token = response.data.token;
-        this.expires = response.data.expires_at;
-      });
-    }
-
     return new Promise((resolve, reject) => {
-      resolve({
-        data: {
-          expires_at: this.expires,
-          token: this.token
-        }
-      });
+      if (!this.token) {
+        axios.post(this.authUrl, {
+          username: this.username,
+          password: this.password
+        })
+        .then((response) => {
+          this.token = response.data.token;
+          this.expires = response.data.expires_at;
+          resolve(response);
+        })
+        .catch((error) => {
+          reject(error);
+        });
+      } else {
+        resolve({
+          data: {
+            expires_at: this.expires,
+            token: this.token
+          }
+        });
+      }
     });
   }
 
@@ -77,29 +81,46 @@ export default class GmapClient {
     });
   }
 
+  doAll(urlList) {
+    return new Promise((resolve, reject) => {
+      this.auth()
+        .then((authResp) => {
+          const token = authResp.data.token;
+          let promiseList = [];
+          for (let i=0, l=urlList.length; i<l; ++i) {
+            promiseList.push(axios.get(urlList[i], { headers: { 'Authorization': token } }));
+          }
+          axios.all(promiseList)
+            .then((results) => {
+              resolve(results);
+            });
+        })
+        .catch((error) => {
+          console.log(error);
+          reject(error);
+        });
+    });
+  }
+
   listGraphs() {
     const url = `${this.apiUrl}/graphs`;
-
     return this.doGet(url);
   }
 
   listCollections() {
     const url = `${this.apiUrl}/collections`;
-
     return this.doGet(url);
   }
 
   getNode(options) {
     const { collection, nodeId } = options;
     const url = `${this.apiUrl}/collections/${collection}/${nodeId}`;
-
     return this.doGet(url);
   }
 
   query(options) {
     const { kind, value } = options;
     const url = `${this.apiUrl}/queries/${kind}/execute?variable=${value}`;
-
     return this.doGet(url);
   }
 
@@ -107,15 +128,27 @@ export default class GmapClient {
     const { collections, query, perPage, page } = options;
     const url = `${this.apiUrl}/collections/search/?collections=${collections}&` +
                 `query=${query}&per_page=${perPage}&page=${page}`;
-
     return this.doGet(url);
   }
 
   traversal(options) {
-    const { graph, startVertex, maxDepth, direction } = options;
-    const url = `${this.apiUrl}/graphs/${graph}/traversal?start_vertex=${startVertex}` +
-                `&max_depth=${maxDepth}&direction=${direction}`;
+    const { graphs, startVertex, maxDepth, direction } = options;
+    let urlList = [];
 
+    for(let i=0, l=graphs.length; i<l; ++i) {
+      urlList.push(`${this.apiUrl}/graphs/${graphs[i]}/traversal?start_vertex=${startVertex}` +
+                   `&max_depth=${maxDepth}&direction=${direction}`);
+    }
+
+    return this.doAll(urlList);
+  }
+
+  pluginData(pluginName, options) {
+    let params = [];
+    for (let key in options) {
+      params.push(`${key}=${options[key]}`);
+    }
+    const url = `${this.apiUrl}/plugin_data/${pluginName}/?${params.join('&')}`;
     return this.doGet(url);
   }
 
