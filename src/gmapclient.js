@@ -34,9 +34,26 @@ class GmapClient {
     this.expires = null;
   }
 
+  isTokenValid() {
+    if (this.expires === null) {
+      return false;
+    }
+
+    const now = new Date(),
+          expires = new Date(this.expires);
+
+    if (now > expires) {
+      this.token = null;
+      this.expires = null;
+      return false;
+    }
+
+    return true;
+  }
+
   auth() {
     return new Promise((resolve, reject) => {
-      if (!this.token) {
+      if (!this.isTokenValid()) {
         axios.post(this.authUrl, {
           username: this.username,
           password: this.password
