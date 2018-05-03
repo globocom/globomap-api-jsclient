@@ -16,17 +16,135 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import minimist from 'minimist';
+import yargs from 'yargs';
 import GmapClient from '../gmapclient';
 
-const argv = minimist(process.argv.slice(2), {
-  alias: {
-    'apiUrl': 'a',
-    'username': 'u',
-    'password': 'p'
-  }
+let gmapclient = new GmapClient({
+  suppressLogs: true
 });
 
-let gmapclient = new GmapClient(argv);
+function print(data) {
+  return console.log(JSON.stringify(data, null, 4));
+}
 
-console.log(argv);
+function runCommand(command, args) {
+  const commandList = ['listGraphs', 'listCollections', 'getNode',
+                       'getNode', 'query', 'search', 'traversal'];
+
+  if (!commandList.includes(command)) {
+    return { 'error': `Command not found: ${command}` };
+  }
+
+  gmapclient.setCredentials(args);
+  gmapclient[command].apply(gmapclient, [args])
+    .then(data => print(data))
+    .catch(err => print({ error: `${command}: ${err}` }));
+}
+
+yargs
+  .env('GMAP_API')
+  .option('url', {
+    alias: 'a',
+    describe: 'Globomap API URL',
+    demandOption: true
+  })
+  .option('username', {
+    alias: 'u',
+    describe: 'Globomap API Username',
+    demandOption: true
+  })
+  .option('password', {
+    alias: 'p',
+    describe: 'Globomap API Password',
+    demandOption: true
+  })
+  .command('list-graphs', 'List graphs',
+    {},
+    args => runCommand('listGraphs', args)
+  )
+  .command('list-collections', 'List collections',
+    {},
+    args => runCommand('listCollections', args)
+  )
+  .command('get-node', 'Retrieve a node by collection and node-id',
+    {
+      collection: {
+        alias: 'c',
+        demandOption: true
+      },
+      'nodeId': {
+        alias: 'n',
+        demandOption: true
+      }
+    },
+    args => runCommand('getNode', args)
+  )
+  .command('query', 'Makes a pre-defined query',
+    {
+      kind: {
+        alias: 'k',
+        describe: "Query's key name",
+        demandOption: true
+      },
+      value: {
+        alias: 'v',
+        describe: 'Variable to pass to the query',
+        demandOption: true
+      }
+    },
+    args => runCommand('query', args)
+  )
+  .command('search', 'Search for nodes',
+    {
+      collections: {
+        alias: 'cs',
+        describe: 'List of collectios (comma separated)',
+        demandOption: true
+      },
+      query: {
+        alias: 'q',
+        demandOption: true
+      },
+      perPage: {
+        alias: 's',
+        describe: 'Items per page / page size',
+        default: 10
+      },
+      page: {
+        alias: 'pg',
+        describe: 'Page number',
+        default: 1
+      }
+    },
+    args => runCommand('search', args)
+  )
+  .command('traversal', 'Makes a traversal search given a graph and initial node',
+    {
+      graph: {
+        alias: 'g',
+        describe: 'Grahp where you want to do the traversal search',
+        demandOption: true
+      },
+      startVertex: {
+        alias: 's',
+        describe: 'Initial node ID',
+        demandOption: true
+      },
+      maxDepth: {
+        alias: 'm',
+        describe: 'The max depth to search for nodes',
+        default: 1
+      },
+      direction: {
+        alias: 'd',
+        describe: 'The search direction',
+        choices: ['any', 'inbound', 'outbound'],
+        default: 'any'
+      }
+    },
+    args => runCommand('traversal', args)
+  )
+  .demandCommand(1, 'You need to pass at least one command')
+  .help()
+  .recommendCommands()
+  .argv

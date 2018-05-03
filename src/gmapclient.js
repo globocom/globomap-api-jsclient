@@ -21,8 +21,9 @@ class GmapClient {
   constructor(options={}) {
     let {
       apiUrl = process.env.GMAP_API_URL,
-      username = process.env.GMAP_USERNAME,
-      password = process.env.GMAP_PASSWORD
+      username = process.env.GMAP_API_USERNAME,
+      password = process.env.GMAP_API_PASSWORD,
+      suppressLogs = false
     } = options;
 
     this.apiUrl = apiUrl;
@@ -30,8 +31,48 @@ class GmapClient {
     this.username = username;
     this.password = password;
 
+    this.suppressLogs = suppressLogs;
+
     this.token = null;
     this.expires = null;
+  }
+
+  log(msg) {
+    if (!this.suppressLogs) {
+      return console.log(msg);
+    }
+  }
+
+  handleError(error) {
+    console.log(error);
+
+    let err = '';
+    if (error.response) {
+      err = error.response.statusText;
+      const errors = error.response.data.errors;
+      if (errors) {
+        err = `${err}, ${errors}`;
+      }
+   }
+    this.log(err);
+    return err;
+  }
+
+  setCredentials(options) {
+    if (this.isTokenValid()) {
+      // There's already a valid token
+      return false;
+    }
+
+    if (this.apiUrl && this.username && this.password) {
+      // Credentials already set
+      return false;
+    }
+
+    const { url, apiUrl, username, password } = options;
+    this.apiUrl = apiUrl || url;
+    this.username = username;
+    this.password = password;
   }
 
   isTokenValid() {
@@ -64,7 +105,7 @@ class GmapClient {
           resolve(response);
         })
         .catch((error) => {
-          reject(error);
+          reject(this.handleError(error));
         });
       } else {
         resolve({
@@ -87,13 +128,11 @@ class GmapClient {
               resolve(response.data);
             })
             .catch((error) => {
-              console.log(error);
-              reject(error);
+              reject(this.handleError(error));
             });
         })
         .catch((error) => {
-          console.log(error);
-          reject(error);
+          reject(this.handleError(error));
         });
     });
   }
@@ -110,11 +149,13 @@ class GmapClient {
           axios.all(promiseList)
             .then((results) => {
               resolve(results);
-            });
+            })
+            .catch((error) => {
+              reject(this.handleError(error));
+            })
         })
         .catch((error) => {
-          console.log(error);
-          reject(error);
+          reject(this.handleError(error));
         });
     });
   }
@@ -149,6 +190,13 @@ class GmapClient {
   }
 
   traversal(options) {
+    const { graph, startVertex, maxDepth, direction } = options;
+    const url = `${this.apiUrl}/graphs/${graph}/traversal?start_vertex=${startVertex}` +
+                `&max_depth=${maxDepth}&direction=${direction}`;
+    return this.doGet(url);
+  }
+
+  traversalMultiple(options) {
     const { graphs, startVertex, maxDepth, direction } = options;
     let urlList = [];
 
