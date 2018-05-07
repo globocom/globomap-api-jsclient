@@ -29,7 +29,7 @@ function print(data) {
 
 function runCommand(command, args) {
   const commandList = ['listGraphs', 'listCollections', 'getNode',
-                       'getNode', 'query', 'search', 'traversal'];
+                       'query', 'search', 'traversal'];
 
   if (!commandList.includes(command)) {
     return { 'error': `Command not found: ${command}` };
@@ -72,7 +72,7 @@ yargs
         alias: 'c',
         demandOption: true
       },
-      'nodeId': {
+      nodeId: {
         alias: 'n',
         demandOption: true
       }

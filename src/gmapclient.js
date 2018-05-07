@@ -44,8 +44,6 @@ class GmapClient {
   }
 
   handleError(error) {
-    console.log(error);
-
     let err = '';
     if (error.response) {
       err = error.response.statusText;
@@ -53,7 +51,7 @@ class GmapClient {
       if (errors) {
         err = `${err}, ${errors}`;
       }
-   }
+    }
     this.log(err);
     return err;
   }
