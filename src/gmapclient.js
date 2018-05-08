@@ -98,9 +98,14 @@ class GmapClient {
           password: this.password
         })
         .then((response) => {
-          this.token = response.data.token;
-          this.expires = response.data.expires_at;
-          resolve(response);
+          this.token = response.data.token || response.data.id;
+          this.expires = response.data.expires_at || response.data.expires;
+          resolve({
+            data: {
+              expires_at: this.expires,
+              token: this.token
+            }
+          });
         })
         .catch((error) => {
           reject(this.handleError(error));
