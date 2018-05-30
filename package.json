@@ -1,6 +1,6 @@
 {
   "name": "globomap-api-jsclient",
-  "version": "1.2.3",
+  "version": "1.2.4",
   "description": "Globomap API JS Client",
   "main": "lib/gmapclient.js",
   "scripts": {
