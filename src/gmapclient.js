@@ -168,8 +168,15 @@ class GmapClient {
     return this.doGet(url);
   }
 
-  listCollections() {
-    const url = `${this.apiUrl}/collections`;
+  listCollections(options) {
+    const { perPage, page } = options;
+    const url = `${this.apiUrl}/collections?per_page=${perPage}&page=${page}`;
+    return this.doGet(url);
+  }
+
+  listEdges(options) {
+    const { perPage, page } = options;
+    const url = `${this.apiUrl}/edges?per_page=${perPage}&page=${page}`;
     return this.doGet(url);
   }
 
@@ -179,9 +186,15 @@ class GmapClient {
     return this.doGet(url);
   }
 
-  query(options) {
+  runQuery(options) {
     const { kind, value } = options;
     const url = `${this.apiUrl}/queries/${kind}/execute?variable=${value}`;
+    return this.doGet(url);
+  }
+
+  listQueries(options) {
+    const { perPage, page } = options;
+    const url = `${this.apiUrl}/queries?per_page=${perPage}&page=${page}`;
     return this.doGet(url);
   }
 
