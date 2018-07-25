@@ -163,8 +163,8 @@ class GmapClient {
     });
   }
 
-  listGraphs() {
-    const url = `${this.apiUrl}/graphs`;
+  listGraphs(options) {
+    const url = `${this.apiUrl}/graphs?per_page=${perPage}&page=${page}`;
     return this.doGet(url);
   }
 
