@@ -164,6 +164,7 @@ class GmapClient {
   }
 
   listGraphs(options) {
+    const { perPage, page } = options;
     const url = `${this.apiUrl}/graphs?per_page=${perPage}&page=${page}`;
     return this.doGet(url);
   }
