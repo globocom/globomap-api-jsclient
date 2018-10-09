@@ -121,12 +121,15 @@ class GmapClient {
     });
   }
 
-  doGet(url) {
+  doGet(url, params) {
     return new Promise((resolve, reject) => {
       this.auth()
         .then((authResp) => {
           const token = authResp.data.token;
-          axios.get(url, { headers: { 'Authorization': token } })
+          axios.get(url, {
+              headers: { 'Authorization': token },
+              params: params || {}
+         })
             .then((response) => {
               resolve(response.data);
             })
@@ -165,20 +168,29 @@ class GmapClient {
 
   listGraphs(options) {
     const { perPage, page } = options;
-    const url = `${this.apiUrl}/graphs?per_page=${perPage}&page=${page}`;
-    return this.doGet(url);
+    const url = `${this.apiUrl}/graphs`;
+    return this.doGet(url, {
+        per_page: per_page || 10,
+        page: page || 1
+    });
   }
 
   listCollections(options) {
     const { perPage, page } = options;
-    const url = `${this.apiUrl}/collections?per_page=${perPage}&page=${page}`;
-    return this.doGet(url);
+    const url = `${this.apiUrl}/collections`;
+    return this.doGet(url, {
+        per_page: per_page || 10,
+        page: page || 1
+    });
   }
 
   listEdges(options) {
     const { perPage, page } = options;
-    const url = `${this.apiUrl}/edges?per_page=${perPage}&page=${page}`;
-    return this.doGet(url);
+    const url = `${this.apiUrl}/edges`;
+    return this.doGet(url, {
+        per_page: per_page || 10,
+        page: page || 1
+    });
   }
 
   getNode(options) {
@@ -189,28 +201,40 @@ class GmapClient {
 
   runQuery(options) {
     const { kind, value } = options;
-    const url = `${this.apiUrl}/queries/${kind}/execute?variable=${value}`;
-    return this.doGet(url);
+    const url = `${this.apiUrl}/queries/${kind}/execute`;
+    return this.doGet(url, {
+        variable: value
+    });
   }
 
   listQueries(options) {
     const { perPage, page } = options;
-    const url = `${this.apiUrl}/queries?per_page=${perPage}&page=${page}`;
-    return this.doGet(url);
+    const url = `${this.apiUrl}/queries`;
+    return this.doGet(url, {
+        per_page: per_page || 10,
+        page: page || 1
+    });
   }
 
   search(options) {
     const { collections, query, perPage, page } = options;
-    const url = `${this.apiUrl}/collections/search/?collections=${collections}&` +
-                `query=${query}&per_page=${perPage}&page=${page}`;
-    return this.doGet(url);
+    const url = `${this.apiUrl}/collections/search/`;
+    return this.doGet(url, {
+        collections: collections,
+        query: query || '',
+        per_page: perPage || 10,
+        page: page || 1
+    });
   }
 
   traversal(options) {
     const { graph, startVertex, maxDepth, direction } = options;
-    const url = `${this.apiUrl}/graphs/${graph}/traversal?start_vertex=${startVertex}` +
-                `&max_depth=${maxDepth}&direction=${direction}`;
-    return this.doGet(url);
+    const url = `${this.apiUrl}/graphs/${graph}/traversal`;
+    return this.doGet(url, {
+        start_vertex: startVertex,
+        max_depth: maxDepth,
+        direction: direction
+    });
   }
 
   traversalMultiple(options) {
@@ -226,14 +250,9 @@ class GmapClient {
   }
 
   pluginData(pluginName, options) {
-    let params = [];
-    for (let key in options) {
-      params.push(`${key}=${options[key]}`);
-    }
-    const url = `${this.apiUrl}/plugin_data/${pluginName}/?${params.join('&')}`;
-    return this.doGet(url);
+    const url = `${this.apiUrl}/plugin_data/${pluginName}/`;
+    return this.doGet(url, options);
   }
-
 }
 
 module.exports = GmapClient;
