@@ -29,7 +29,7 @@ function print(data) {
 
 function runCommand(command, args) {
   const commandList = ['listGraphs', 'listCollections', 'getNode',
-                       'query', 'search', 'traversal'];
+                       'getPlugins', 'query', 'search', 'traversal'];
 
   if (!commandList.includes(command)) {
     return { 'error': `Command not found: ${command}` };
@@ -78,6 +78,10 @@ yargs
       }
     },
     args => runCommand('getNode', args)
+  )
+  .command('get-plugins', 'List plugins metadata',
+    {},
+    args => runCommand('getPlugins', args)
   )
   .command('query', 'Makes a pre-defined query',
     {

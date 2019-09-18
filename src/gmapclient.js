@@ -225,12 +225,17 @@ class GmapClient {
     return this.doAll(urlList);
   }
 
+  getPlugins(options) {
+    const url = `${this.apiUrl}/plugins/`;
+    return this.doGet(url);
+  }
+
   pluginData(pluginName, options) {
     let params = [];
     for (let key in options) {
       params.push(`${key}=${options[key]}`);
     }
-    const url = `${this.apiUrl}/plugin_data/${pluginName}/?${params.join('&')}`;
+    const url = `${this.apiUrl}/plugins/${pluginName}/?${params.join('&')}`;
     return this.doGet(url);
   }
 
