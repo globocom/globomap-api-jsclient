@@ -28,6 +28,9 @@ function print(data) {
 }
 
 function runCommand(command, args) {
+  args['page'] = 1;
+  args['per_page'] = 999;
+
   const commandList = ['listGraphs', 'listCollections', 'getNode',
                        'getPlugins', 'query', 'search', 'traversal'];
 
@@ -109,7 +112,7 @@ yargs
         alias: 'q',
         demandOption: true
       },
-      perPage: {
+      per_page: {
         alias: 's',
         describe: 'Items per page / page size',
         default: 10
@@ -129,12 +132,12 @@ yargs
         describe: 'Grahp where you want to do the traversal search',
         demandOption: true
       },
-      startVertex: {
+      start_vertex: {
         alias: 's',
         describe: 'Initial node ID',
         demandOption: true
       },
-      maxDepth: {
+      max_depth: {
         alias: 'm',
         describe: 'The max depth to search for nodes',
         default: 1

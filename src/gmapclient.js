@@ -121,122 +121,119 @@ class GmapClient {
     });
   }
 
-  doGet(url) {
+  doRequest(url, params={}, reqType='get') {
     return new Promise((resolve, reject) => {
       this.auth()
-        .then((authResp) => {
+        .then(authResp => {
           const token = authResp.data.token;
-          axios.get(url, { headers: { 'Authorization': token } })
-            .then((response) => {
+          axios[reqType](url, {
+              headers: { 'Authorization': token },
+              params: params
+            })
+            .then(response => {
               resolve(response.data);
             })
-            .catch((error) => {
+            .catch(error => {
               reject(this.handleError(error));
             });
         })
-        .catch((error) => {
+        .catch(error => {
           reject(this.handleError(error));
         });
     });
   }
 
+  doPost(url, params={}) {
+    return this.doRequest(url, params, 'post');
+  }
+
+  doGet(url, params={}) {
+    return this.doRequest(url, params, 'get');
+  }
+
   doAll(urlList) {
     return new Promise((resolve, reject) => {
       this.auth()
-        .then((authResp) => {
+        .then(authResp => {
           const token = authResp.data.token;
           let promiseList = [];
           for (let i=0, l=urlList.length; i<l; ++i) {
             promiseList.push(axios.get(urlList[i], { headers: { 'Authorization': token } }));
           }
           axios.all(promiseList)
-            .then((results) => {
+            .then(results => {
               resolve(results);
             })
-            .catch((error) => {
+            .catch(error => {
               reject(this.handleError(error));
             })
         })
-        .catch((error) => {
+        .catch(error => {
           reject(this.handleError(error));
         });
     });
   }
 
   listGraphs(options) {
-    const { perPage, page } = options;
-    const url = `${this.apiUrl}/graphs?per_page=${perPage}&page=${page}`;
-    return this.doGet(url);
+    return this.doGet(`${this.apiUrl}/graphs`, options);
   }
 
   listCollections(options) {
-    const { perPage, page } = options;
-    const url = `${this.apiUrl}/collections?per_page=${perPage}&page=${page}`;
-    return this.doGet(url);
+    return this.doGet(`${this.apiUrl}/collections`, options);
   }
 
   listEdges(options) {
-    const { perPage, page } = options;
-    const url = `${this.apiUrl}/edges?per_page=${perPage}&page=${page}`;
-    return this.doGet(url);
+    return this.doGet(`${this.apiUrl}/edges`, options);
   }
 
   getNode(options) {
     const { collection, nodeId } = options;
-    const url = `${this.apiUrl}/collections/${collection}/${nodeId}`;
-    return this.doGet(url);
+    return this.doGet(`${this.apiUrl}/collections/${collection}/${nodeId}`);
   }
 
   runQuery(options) {
     const { kind, value } = options;
-    const url = `${this.apiUrl}/queries/${kind}/execute?variable=${value}`;
-    return this.doGet(url);
+    return this.doGet(`${this.apiUrl}/queries/${kind}/execute`, { variable: value });
   }
 
   listQueries(options) {
-    const { perPage, page } = options;
-    const url = `${this.apiUrl}/queries?per_page=${perPage}&page=${page}`;
-    return this.doGet(url);
+    return this.doGet(`${this.apiUrl}/queries`, options);
   }
 
   search(options) {
-    const { collections, query, perPage, page } = options;
-    const url = `${this.apiUrl}/collections/search/?collections=${collections}&` +
-                `query=${query}&per_page=${perPage}&page=${page}`;
-    return this.doGet(url);
+    return this.doGet(`${this.apiUrl}/collections/search`, options);
   }
 
   traversal(options) {
-    const { graph, startVertex, maxDepth, direction } = options;
-    const url = `${this.apiUrl}/graphs/${graph}/traversal?start_vertex=${startVertex}` +
-                `&max_depth=${maxDepth}&direction=${direction}`;
-    return this.doGet(url);
+    const { graph, start_vertex, max_depth, direction } = options;
+    return this.doGet(
+      `${this.apiUrl}/graphs/${graph}/traversal`,
+      {
+        start_vertex,
+        max_depth,
+        direction
+      }
+    );
   }
 
   traversalMultiple(options) {
-    const { graphs, startVertex, maxDepth, direction } = options;
+    const { graphs, start_vertex, max_depth, direction } = options;
     let urlList = [];
 
     for(let i=0, l=graphs.length; i<l; ++i) {
-      urlList.push(`${this.apiUrl}/graphs/${graphs[i]}/traversal?start_vertex=${startVertex}` +
-                   `&max_depth=${maxDepth}&direction=${direction}`);
+      urlList.push(`${this.apiUrl}/graphs/${graphs[i]}/traversal?start_vertex=${start_vertex}` +
+                   `&max_depth=${max_depth}&direction=${direction}`);
     }
 
     return this.doAll(urlList);
   }
 
-  getPlugins(options) {
-    const url = `${this.apiUrl}/plugins/`;
-    return this.doGet(url);
+  listPlugins(options) {
+    return this.doGet(`${this.apiUrl}/plugins/`, options);
   }
 
   pluginData(pluginName, options) {
-    let params = [];
-    for (let key in options) {
-      params.push(`${key}=${options[key]}`);
-    }
-    const url = `${this.apiUrl}/plugins/${pluginName}/?${params.join('&')}`;
-    return this.doGet(url);
+    return this.doPost(`${this.apiUrl}/plugins/${pluginName}/`, options);
   }
 
 }
