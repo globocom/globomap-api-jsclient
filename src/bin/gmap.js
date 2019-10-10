@@ -41,6 +41,17 @@ function runCommand(command, args) {
     .catch(err => print({ error: `${command}: ${err}` }));
 }
 
+function runSearch(args) {
+    const { query, collections } = args;
+
+    args['query'] = `[[{"field": "name", "value": "${query}", "operator": "LIKE"}],` +
+                    `[{"field": "properties", "value": "${query}", "operator": "LIKE"}]]`;
+
+    args['collections'] = collections.toString();
+
+    return runCommand('search', args);
+}
+
 yargs
   .env('GMAP_API')
   .option('url', {
@@ -120,7 +131,7 @@ yargs
         default: 1
       }
     },
-    args => runCommand('search', args)
+    args => runSearch(args)
   )
   .command('traversal', 'Makes a traversal search given a graph and initial node',
     {

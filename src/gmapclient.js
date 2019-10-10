@@ -193,7 +193,12 @@ class GmapClient {
 
   runQuery(options) {
     const { kind, value } = options;
-    return this.doGet(`${this.apiUrl}/queries/${kind}/execute`, { variable: value });
+    return this.doGet(
+      `${this.apiUrl}/queries/${kind}/execute`,
+      {
+        variable: value
+      }
+    );
   }
 
   listQueries(options) {
@@ -202,20 +207,11 @@ class GmapClient {
 
   search(options) {
     const { collections, query, per_page, page } = options;
-
-    let q = `[[{"field": "name", "value": "${query}", "operator": "LIKE"}],` +
-            `[{"field": "properties", "value": "${query}", "operator": "LIKE"}]]`;
-
-    let co = '';
-    if (collections !== undefined) {
-      co = collections.toString();
-    }
-
     return this.doGet(
       `${this.apiUrl}/collections/search`,
       {
-        collections: co,
-        query: q,
+        collections,
+        query,
         per_page,
         page,
       }
