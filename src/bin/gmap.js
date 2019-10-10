@@ -28,9 +28,6 @@ function print(data) {
 }
 
 function runCommand(command, args) {
-  args['page'] = 1;
-  args['per_page'] = 999;
-
   const commandList = ['listGraphs', 'listCollections', 'getNode',
                        'getPlugins', 'query', 'search', 'traversal'];
 

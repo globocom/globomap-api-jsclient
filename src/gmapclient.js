@@ -201,7 +201,25 @@ class GmapClient {
   }
 
   search(options) {
-    return this.doGet(`${this.apiUrl}/collections/search`, options);
+    const { collections, query, per_page, page } = options;
+
+    let q = `[[{"field": "name", "value": "${query}", "operator": "LIKE"}],` +
+            `[{"field": "properties", "value": "${query}", "operator": "LIKE"}]]`;
+
+    let co = '';
+    if (collections !== undefined) {
+      co = collections.toString();
+    }
+
+    return this.doGet(
+      `${this.apiUrl}/collections/search`,
+      {
+        collections: co,
+        query: q,
+        per_page,
+        page,
+      }
+    );
   }
 
   traversal(options) {
