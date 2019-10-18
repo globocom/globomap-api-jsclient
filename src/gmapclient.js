@@ -121,15 +121,23 @@ class GmapClient {
     });
   }
 
-  doRequest(url, params={}, reqType='get') {
+  doRequest(url, params={}, method='get') {
     return new Promise((resolve, reject) => {
       this.auth()
         .then(authResp => {
-          const token = authResp.data.token;
-          axios[reqType](url, {
-              headers: { 'Authorization': token },
-              params: params
-            })
+          const reqConfig = {
+            headers: { 'Authorization': authResp.data.token },
+            method,
+            url,
+            params
+          };
+
+          if (method === 'post') {
+            reqConfig['params'] = '';
+            reqConfig['data'] = params;
+          }
+
+          axios(reqConfig)
             .then(response => {
               resolve(response.data);
             })
