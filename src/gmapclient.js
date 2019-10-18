@@ -121,7 +121,7 @@ class GmapClient {
     });
   }
 
-  doRequest(url, params={}, method='get') {
+  doRequest(url, params={}, data={}, method='get') {
     return new Promise((resolve, reject) => {
       this.auth()
         .then(authResp => {
@@ -129,14 +129,9 @@ class GmapClient {
             headers: { 'Authorization': authResp.data.token },
             method,
             url,
-            params
+            params,
+            data
           };
-
-          if (method === 'post') {
-            reqConfig['params'] = '';
-            reqConfig['data'] = params;
-          }
-
           axios(reqConfig)
             .then(response => {
               resolve(response.data);
@@ -151,12 +146,12 @@ class GmapClient {
     });
   }
 
-  doPost(url, params={}) {
-    return this.doRequest(url, params, 'post');
+  doPost(url, params={}, data={}) {
+    return this.doRequest(url, params, data, 'post');
   }
 
   doGet(url, params={}) {
-    return this.doRequest(url, params, 'get');
+    return this.doRequest(url, params, {}, 'get');
   }
 
   doAll(urlList) {
@@ -255,7 +250,7 @@ class GmapClient {
   }
 
   pluginData(pluginName, options) {
-    return this.doPost(`${this.apiUrl}/plugins/${pluginName}/`, options);
+    return this.doPost(`${this.apiUrl}/plugins/${pluginName}/`, {}, options);
   }
 
 }
